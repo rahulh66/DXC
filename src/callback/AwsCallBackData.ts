@@ -1,42 +1,25 @@
-import { S3 } from "aws-sdk";
+import { InterviewHelper } from "../helper/InterviewHelper"; // Import helper
 
-const s3 = new S3();
-const BUCKET_NAME = "sample-rahul";
-const INPUT_KEY = "sample.json";
-const OUTPUT_KEY = "result.json";
-
-export class InterviewHelper {
-  static async processInterviewData(): Promise<void> {
-    // Read from S3
-    const input   = await s3.getObject({ Bucket: BUCKET_NAME, Key: INPUT_KEY }).promise();
-    const rawData = JSON.parse(input.Body!.toString());
-
-    const conversation = [];
-
-    // Navigate to Transcribe data
-    const results = rawData?.Transcript?.Results || [];
-    results.forEach((result: any) => {
-      const items = result?.Alternatives?.[0]?.Items || [];
-      items.forEach((item: any) => {
-        if (item.ParticipantRole && item.Content) {
-          conversation.push({
-            Who: item.ParticipantRole,
-            What: item.Content
-          });
-        }
-      });
-    });
-
-    const resultJson = {
-      Conversation: conversation
+exports.handler = async (event: any) => {
+  const actionType = event?.actionType;
+  try {
+    if (actionType === "InterviewAction") {
+      await InterviewHelper.processInterviewData(); //Call helper function
+      return {
+        statusCode: 200,
+        body: JSON.stringify({ message: "Interview data processed successfully." })
+      };
+    } else {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ error: "Unknown action type" })
+      };
+    }
+  } catch (error) {
+    console.error("Error:", error);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: "Something went wrong." })
     };
-
-    // Write to S3
-    await s3.putObject({
-      Bucket: BUCKET_NAME,
-      Key: OUTPUT_KEY,
-      Body: JSON.stringify(resultJson, null, 2),
-      ContentType: "application/json"
-    }).promise();
   }
-}
+};
