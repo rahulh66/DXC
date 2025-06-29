@@ -1,9 +1,11 @@
+// In InterviewHelper.ts
+import { IConversation } from "../model/ISequenceObject";
 import { S3 } from "aws-sdk";
 
-const s3 = new S3();
-const BUCKET_NAME = "sample-rahul";
-const INPUT_KEY = "sample.json";
-const OUTPUT_KEY = "result.json";
+const s3            = new S3();
+const BUCKET_NAME   = "sample-rahul";
+const INPUT_KEY     = "sample.json";
+const OUTPUT_KEY    = "result.json";
 
 export class InterviewHelper {
   static async processInterviewData(): Promise<void> {
